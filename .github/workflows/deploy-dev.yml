@@ -1,0 +1,47 @@
+name: Deploy to production
+
+on:
+  push:
+    branches:
+      - dev
+jobs:
+
+  lint-helm:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - name: lint helm
+        uses: WyriHaximus/github-action-helm3@v2
+        with:
+          exec: helm lint .helm
+
+  build-parser:
+    needs: [lint-helm]
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Login to docker hub
+        uses: docker/login-action@v1
+        with:
+          registry: ${{secrets.HUB_REGISTRY_URL}}
+          username: ${{secrets.HUB_REGISTRY_USER}}
+          password: ${{secrets.HUB_REGISTRY_TOKEN}}
+      - name: Build and push parser image
+        uses: docker/build-push-action@v2.4.0
+        with:
+          context: ./
+          push: true
+          tags: ${{secrets.HUB_REGISTRY_URL}}/dockerhub/simple-parser:latest
+
+  deployment:
+    needs: [build-parser]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - name: Deploy
+        uses: WyriHaximus/github-action-helm3@v2
+        with:
+          exec: helm upgrade mp-bot .helm/ --install --timeout 120s --create-namespace --atomic --version latest --namespace=mp-bot --set version=latest --force
+          kubeconfig: ${{ secrets.KUBECONFIG }}

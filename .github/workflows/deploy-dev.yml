@@ -33,7 +33,7 @@ jobs:
         with:
           context: ./
           push: true
-          tags: ${{secrets.HUB_REGISTRY_URL}}/dockerhub/simple-backend:latest
+          tags: ${{secrets.HUB_REGISTRY_URL}}/dockerhub/simple-parser:latest
 
   deployment:
     needs: [build-parser]

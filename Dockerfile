@@ -3,7 +3,7 @@ RUN apk add --update --no-cache build-base make python3
 
 WORKDIR /app
 
-COPY ["package.json", "package-lock.json", "tsconfig.json", "tsconfig.build.json", "nest-cli.json", "./"]
+COPY ["package.json", "package-lock.json", "tsconfig.json", "tsconfig.build.json", "nest-cli.json", "nest-cli.json", "./"]
 RUN npm ci
 COPY ./src src
 
@@ -14,6 +14,6 @@ RUN apk --update --no-cache add openssh sshpass
 
 WORKDIR /app
 
-COPY ["package.json", "./"]
+COPY ["package.json",  "ormconfig.js", "./"]
 COPY --from=builder /app/node_modules node_modules
 COPY --from=builder /app/dist dist
